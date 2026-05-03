@@ -207,38 +207,50 @@ def _interact_pair(
     params: Params,
     rng: np.random.Generator,
 ) -> None:
-    """Single interaction between agents i and j."""
+    """
+    Single simultaneous interaction between agents i and j.
+
+    Both agents choose their actions before observing the other's choice,
+    so rewards include what each received from the other. next_max_q is
+    the agent's current best Q-value for this same partner, giving the
+    discount factor a real role in bootstrapping future relationship value.
+    """
     agent_i = agents[i]
     agent_j = agents[j]
 
-    # Agent i chooses action
+    # Simultaneous action selection
     action_i = agent_i.select_action(j, rng)
-
-    # Payoff calculation
-    if action_i == COOPERATE:
-        agent_i.payoff -= params.cost
-        agent_j.payoff += params.benefit
-        reward_i = -params.cost
-    else:  # DEFECT
-        reward_i = 0
-
-    # Agent j's best Q-value for next state (simplified: next partner unknown)
-    next_max_q_i = 0  # In simplified version, assume no future value
-
-    # Agent i learns from this interaction
-    agent_i.learn(j, action_i, reward_i, next_max_q_i)
-
-    # Agent j's turn: condition on what i just did
     action_j = agent_j.select_action(i, rng)
 
+    # Full reward: what i paid + what i received from j
+    reward_i = 0.0
+    if action_i == COOPERATE:
+        reward_i -= params.cost
+        agent_j.payoff += params.benefit
     if action_j == COOPERATE:
+        reward_i += params.benefit
         agent_j.payoff -= params.cost
-        agent_i.payoff += params.benefit
-        reward_j = -params.cost
-    else:  # DEFECT
-        reward_j = 0
 
-    next_max_q_j = 0
+    reward_j = 0.0
+    if action_j == COOPERATE:
+        reward_j -= params.cost
+    if action_i == COOPERATE:
+        reward_j += params.benefit
+
+    agent_i.payoff += reward_i
+    agent_j.payoff += reward_j
+
+    # next_max_q: best Q-value agent currently holds for this same partner.
+    # This bootstraps the long-term value of the relationship, making the
+    # discount factor (gamma) genuinely functional.
+    next_max_q_i = max(
+        agent_i.get_q(j, COOPERATE), agent_i.get_q(j, DEFECT)
+    )
+    next_max_q_j = max(
+        agent_j.get_q(i, COOPERATE), agent_j.get_q(i, DEFECT)
+    )
+
+    agent_i.learn(j, action_i, reward_i, next_max_q_i)
     agent_j.learn(i, action_j, reward_j, next_max_q_j)
 
 

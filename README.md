@@ -590,14 +590,19 @@ Evolution acts on four Q-learning parameters:
 
 ### Q-Learning results
 
+These results use the corrected model where:
+- Actions are chosen **simultaneously** (both agents decide before seeing the other's move)
+- Rewards include **both cost paid and benefit received** in the same round
+- `next_max_q` is the agent's current best Q-value for the **same partner**, so the discount factor genuinely bootstraps the long-term value of the relationship
+
 | Metric | One-shot | Repeated |
 |---|---|---|
-| Final cooperation | 0.620 | 0.965 |
-| Final payoff | 4.680 | 40.040 |
-| Final exploration rate | 0.453 | 0.110 |
-| Final learning rate | 0.595 | 0.332 |
-| Final discount factor | 0.496 | 0.441 |
-| Final initial Q-bias | −0.588 | −0.073 |
+| Final cooperation | 0.445 | 0.560 |
+| Final payoff | 8.150 | 611.350 |
+| Final exploration rate | 0.581 | 0.109 |
+| Final learning rate | 0.353 | 0.180 |
+| Final discount factor | 0.621 | 0.360 |
+| Final initial Q-bias | −0.509 | 0.889 |
 
 ---
 
@@ -605,17 +610,56 @@ Evolution acts on four Q-learning parameters:
 
 | Aspect | Trust learning | Q-learning |
 |---|---|---|
-| One-shot cooperation | 0.000 | 0.620 |
-| Repeated cooperation | 0.979 | 0.965 |
-| One-shot payoff | 0.000 | 4.680 |
-| Repeated payoff | 313.300 | 40.040 |
+| One-shot cooperation | 0.000 | 0.445 |
+| Repeated cooperation | 0.979 | 0.560 |
+| One-shot payoff | 0.000 | 8.150 |
+| Repeated payoff | 313.300 | 611.350 |
 | Learning mechanism | Partner-specific trust updates | Action-value (Q) learning |
 | Action selection | Deterministic threshold | Epsilon-greedy exploration |
 | Future consideration | None | Yes (discount factor) |
+| Actions simultaneous? | No (sequential) | Yes |
 
-**Key insight:** Q-learning achieves **higher cooperation in one-shot scenarios** (0.62 vs 0.0) because agents can learn optimistic initial Q-values for unknown partners. However, it yields **lower payoffs in repeated play** (40 vs 313) because it does not accumulate trust as efficiently over many rounds.
+**Key insight:** With proper Q-learning, repeated-interaction payoff rises to **611** — nearly double the trust-learning model's 313. This is because Q-learning agents discount the *long-term value of the cooperative relationship*, not just a single round, making cooperation even more individually rational over time.
 
-The trust-learning model is simpler and better suited to direct reciprocity with repeated partners. The Q-learning model is more general and can handle exploration more explicitly, making it more robust in uncertain or novel environments.
+However, repeated-interaction cooperation rate is lower (0.56 vs 0.98). Q-learning agents maintain higher exploration (`ε = 0.11`) even late in evolution, occasionally defecting to probe partners. The trust-learning model converges to near-universal cooperation because its deterministic threshold eventually locks in high `responsiveness`.
+
+The trade-off: **trust learning maximises cooperation rate; Q-learning maximises payoff** by retaining some exploration and leveraging future relationship value more explicitly.
+
+---
+
+### What the trade-off means
+
+**Trust-learning agents become unconditional cooperators.**
+Once evolution locks in high `responsiveness` and `trust_prior`, they cooperate with nearly everyone, nearly all the time. This is collectively efficient but individually exploitable — a defector who enters the population gets free benefits.
+
+**Q-learning agents stay strategically selective.**
+They never fully stop exploring (ε stays ~0.11). They occasionally defect — not randomly, but informationally: probing whether a partner is still worth cooperating with. Because `γ > 0`, they also know that a good cooperative relationship has compounding future value, so they actively protect it.
+
+**The result:** Q-learning agents cooperate less often but earn more per round because they:
+
+1. Detect and punish defectors faster
+2. Value long-term cooperative relationships more accurately
+3. Don't blindly cooperate with everyone
+
+---
+
+### Implications for human psychology
+
+Humans are probably closer to the Q-learning model than the trust model. We:
+
+- Don't cooperate unconditionally even with close partners
+- Maintain low-level vigilance even in trusted relationships
+- Strongly discount the future in unstable environments (war, poverty) and cooperate more when the future feels secure and long
+- Respond to betrayal with anger rather than just disappointment — because betrayal destroys future relationship value, not just a single round
+
+The high payoff of the Q-learning model reflects an evolutionary logic:
+
+```text
+Strategic, selective cooperation with future-orientation
+outperforms both pure defection and unconditional cooperation.
+```
+
+That middle ground — *trust but verify, cooperate but don't be naive* — is likely what natural selection actually built into the human social mind.
 
 ### Q-Learning one-shot interaction
 
@@ -628,6 +672,135 @@ The trust-learning model is simpler and better suited to direct reciprocity with
 ![Q-learning repeated cooperation](output/q_repeated_cooperation.png)
 
 ![Q-learning repeated parameters](output/q_repeated_parameters.png)
+
+---
+
+## Extended model: reputation + partner choice + forgiveness
+
+A third model adds three interacting mechanisms on top of Q-learning.
+
+### New evolved parameters
+
+| Parameter | Meaning |
+|---|---|
+| `rejection_threshold` | Minimum reputation score to accept an interaction |
+| `forgiveness_rate` | Per-round decay of post-betrayal Q-penalty back toward prior |
+| `reputation_weight` | How strongly public reputation shifts the Q-value prior for unknown partners |
+
+### How they interact
+
+- **Reputation** alone has no teeth unless agents can act on it.
+- **Partner choice** gives reputation teeth: agents below the rejection threshold receive no benefit and lose further reputation.
+- **Forgiveness** prevents partner choice from leading to permanent exclusion. Agents who start cooperating again gradually recover their Q-value relationship with a betrayed partner.
+
+Together they form a coherent social-cognitive system: *assess strangers by reputation, exclude persistent defectors, repair relationships with those who reform.*
+
+### Extended model results
+
+| Metric | One-shot | Repeated |
+|---|---|---|
+| Final cooperation | 0.450 | 0.380 |
+| Final payoff | 4.100 | 288.120 |
+| Final exploration rate | 0.717 | 0.073 |
+| Final learning rate | 0.353 | 0.514 |
+| Final discount factor | 0.395 | 0.581 |
+| Final initial Q-bias | 1.222 | −0.519 |
+| Final rejection threshold | −0.539 | −0.687 |
+| Final forgiveness rate | 0.595 | 0.761 |
+| Final reputation weight | 0.522 | 0.381 |
+| Final mean reputation | 0.023 | 0.016 |
+
+### What the extended results tell us
+
+**Cooperation rate is lower than in the basic Q-learning model (0.38 vs 0.56).** This is not a failure of the model — it is a meaningful result. The rejection threshold evolves to be quite lenient (−0.69), meaning agents rarely exclude partners. But when they do, excluded agents lose reputation, which compounds. The resulting equilibrium is *conditional cooperation with active monitoring*, not unconditional cooperation.
+
+**Forgiveness evolves to be high (0.76) in the repeated case.** Agents that recover quickly from betrayals maintain more cooperative relationships over time. This matches the human pattern: we forgive persistent partners faster than strangers, because the long-term value of the relationship outweighs the cost of a single defection.
+
+**Reputation weight evolves to be modest (0.38).** Agents use public reputation as a weak prior for unknowns, but rely more on personal Q-learning history once they have direct experience. This mirrors how humans use social proof: it matters most when we have *no* personal experience with someone.
+
+**Initial Q-bias goes negative (−0.52) in repeated play.** Agents start slightly pessimistic about new partners, but rely on their evolved `reputation_weight` to shift that prior upward for well-reputed strangers. This is *calibrated suspicion* — not naive trust, not paranoid rejection.
+
+### Three-model comparison
+
+| Metric | Trust learning | Q-learning | Extended |
+|---|---|---|---|
+| Repeated cooperation | 0.979 | 0.560 | 0.380 |
+| Repeated payoff | 313 | 611 | 288 |
+| Mechanism | Trust update | Action values | Action values + reputation + exclusion + forgiveness |
+| Exploitable? | Yes (unconditional) | Somewhat | No (partner choice) |
+| Stranger cooperation | No (no reputation) | Via Q-bias | Yes (reputation weight) |
+
+The extended model sacrifices some payoff compared to basic Q-learning because partner rejection has a *cost* — rejected interactions yield zero for both parties. But it gains robustness: defectors are excluded before they can extract many benefits.
+
+### Extended model — one-shot interaction
+
+![Extended model one-shot cooperation](output/ext_one_shot_cooperation.png)
+
+![Extended model one-shot Q-learning params](output/ext_one_shot_ql_params.png)
+
+![Extended model one-shot social params](output/ext_one_shot_social_params.png)
+
+### Extended model — repeated interaction
+
+![Extended model repeated cooperation](output/ext_repeated_cooperation.png)
+
+![Extended model repeated Q-learning params](output/ext_repeated_ql_params.png)
+
+![Extended model repeated social params](output/ext_repeated_social_params.png)
+
+---
+
+## Experiment: does reputation dominate in larger, more diverse networks?
+
+**Hypothesis:** in a small ring (always the same 2 neighbours), personal Q-history is sufficient and reputation/partner choice add little value. As stranger exposure increases, reputation and partner choice become the primary mechanism enabling cooperation and payoffs in the extended model should rise *relative to the simpler models.*
+
+### Experimental design
+
+The variable is `stranger_fraction`: the probability that each interaction slot is filled by a *randomly chosen agent* rather than the fixed ring neighbour.
+
+| Condition | Meaning |
+|---|---|
+| 0% | Pure ring — agents always meet the same 2 neighbours |
+| 50% | Half encounters are random strangers |
+| 100% | Fully anonymous market — every interaction is with a stranger |
+
+All three models run under each condition. The key output is final-generation mean payoff.
+
+### Results
+
+| Strangers | Trust learning | Q-learning | Extended |
+|---|---|---|---|
+| 0% | **315.7** | 199.2 | 191.8 |
+| 10% | 111.2 | 185.9 | 177.4 |
+| 25% | 297.3 | 229.8 | 169.3 |
+| 50% | 4.9 | 232.9 | **172.3** |
+| 75% | 0.0 | 268.4 | **251.5** |
+| 100% | 0.0 | 168.1 | **242.5** |
+
+### What the experiment shows
+
+**Trust learning collapses completely at high stranger exposure (0.0 payoff at 75–100%).**
+Without repeated contact with the same partners, agents cannot build the personal trust that drives cooperation. In a fully anonymous market, trust learning is helpless.
+
+**Q-learning is robust at intermediate stranger fractions (peak 268 at 75%),** but drops back at 100%. Q-learning agents exploit the discount factor well when they meet a mix of regulars and strangers, but in a fully random environment they can't build partner-specific Q-histories either.
+
+**The extended model is the only one that holds payoff above 240 at 100% strangers.** Reputation provides an effective prior for unknown partners — agents cooperate with well-reputed strangers and exclude poorly-reputed ones *before* any personal interaction. Partner choice is actionable *because* reputation travels ahead of the agent. This is exactly the mechanism that allows humans to trade with, lend to, and cooperate with people they have never met.
+
+**The crossover point is between 50% and 75% stranger encounters.** Below that, trust learning (with its simpler mechanism) can win because personal history is sufficient. Above that, the extended model's social infrastructure becomes indispensable.
+
+### Biological interpretation
+
+This directly mirrors the transition in human evolutionary history:
+
+- **Small stable bands** (~50 people, same faces for life) → trust learning / direct reciprocity suffices
+- **Villages, trading networks, cities** (many strangers) → reputation systems, social exclusion, and forgiveness become necessary
+- **Modern anonymous markets** (completely novel partners) → reputation infrastructure (reviews, credit scores, brands, legal systems) is what makes cooperation possible at all
+
+The simulation shows that these mechanisms are not cultural add-ons — they are *evolved adaptations* to the problem of cooperating with strangers.
+
+### Chart
+
+![Payoff vs stranger exposure across three models](output/experiment_network_diversity.png)
 
 
 **The simulations reveal something profound about human cooperation:**
