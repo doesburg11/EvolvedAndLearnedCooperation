@@ -19,6 +19,26 @@ Agents can cooperate or defect. Cooperation costs the actor something but gives 
 
 ---
 
+## Contents
+
+1. [Main idea](#main-idea)
+2. [Inherited traits](#inherited-traits)
+3. [The core decision rule](#the-core-decision-rule)
+4. [Payoff structure](#payoff-structure)
+5. [Why compare one-shot and repeated interaction?](#why-compare-one-shot-and-repeated-interaction)
+6. [Output](#output)
+7. [How to run](#how-to-run)
+8. [Relation to cooperation mechanisms](#relation-to-cooperation-mechanisms)
+9. [Mechanisms not yet included](#mechanisms-not-yet-included)
+10. [Summary](#summary)
+11. [Simulation results](#simulation-results)
+12. [Q-Learning variant](#q-learning-variant)
+13. [Extended model](#extended-model-reputation--partner-choice--forgiveness)
+14. [Network diversity experiment](#experiment-does-reputation-dominate-in-larger-more-diverse-networks)
+15. [Appendix: Simple trust learning vs Q-learning](#appendix-simple-trust-learning-vs-q-learning)
+
+---
+
 ## Main idea
 
 The model separates two processes:
@@ -214,222 +234,37 @@ It shows whether cooperation increases, collapses, or remains unstable over gene
 
 ## How to run
 
-Create and activate a virtual environment:
+Activate the project conda environment:
 
 ```bash
-python3 -m venv .venv
-source .venv/bin/activate
+conda activate .conda
 ```
 
-Install dependencies:
+To create the environment from scratch:
 
 ```bash
-pip install numpy matplotlib
+conda create --prefix .conda python=3.11
+conda activate .conda
+conda install numpy matplotlib
 ```
 
-Run the simulation:
+Run each model individually:
 
 ```bash
+# Trust-learning model (basic reciprocity + evolution)
 python two_timescale_reciprocity.py
+
+# Q-learning model (action-value learning + evolution)
+python two_timescale_q_learning.py
+
+# Extended model (Q-learning + reputation + partner choice + forgiveness)
+python two_timescale_extended.py
+
+# Network diversity experiment (all three models across stranger-fraction levels)
+python experiment_network_diversity.py
 ```
 
----
-
-# Difference from real Q-learning
-
-This model uses a simple reinforcement-like trust update.
-
-It is related to reinforcement learning, but it is not full Q-learning.
-
----
-
-## What this model does
-
-In this model, agents update partner-specific trust:
-
-```python
-learned_trust[i, j] += alpha_i * (target_for_i - learned_trust[i, j])
-```
-
-Where:
-
-```python
-target_for_i = 1.0 if cooperate_j else -1.0
-```
-
-So the agent learns:
-
-```text
-partner cooperated  -> trust goes up
-partner defected    -> trust goes down
-```
-
-This is a simple social-learning rule.
-
-The agent is not explicitly learning the value of its own actions.
-
-It is learning whether the partner seems trustworthy.
-
----
-
-## What real Q-learning does
-
-In real Q-learning, an agent learns the expected value of taking an action in a state.
-
-The basic form is:
-
-```python
-Q[state, action] = Q[state, action] + alpha * (
-    reward + gamma * max(Q[next_state, next_action]) - Q[state, action]
-)
-```
-
-A Q-learning agent would learn values such as:
-
-```python
-Q[partner, COOPERATE]
-Q[partner, DEFECT]
-```
-
-This means the agent learns:
-
-```text
-how valuable it is for me to cooperate with this partner
-how valuable it is for me to defect against this partner
-```
-
-That is different from merely learning whether the partner is trustworthy.
-
----
-
-## Simple trust learning versus Q-learning
-
-| Feature | Current model | Real Q-learning |
-|---|---|---|
-| Learns about partners? | Yes | Can, if partner identity is part of the state |
-| Learns action values? | No | Yes |
-| Has Q-values? | No | Yes |
-| Has states? | Very limited | Yes |
-| Has actions? | Cooperation is chosen by a rule | Actions are selected from learned values |
-| Uses reward directly? | No, mostly partner behavior | Yes |
-| Uses future expected reward? | No | Yes |
-| Has discount factor `gamma`? | No | Yes |
-| Has exploration strategy? | Only random mistakes | Usually epsilon-greedy or softmax |
-| Learns policy from reward? | Not fully | Yes |
-
----
-
-## Important conceptual difference
-
-The current model says:
-
-```text
-I cooperate if I have enough inherited trust plus learned trust in this partner.
-```
-
-Q-learning says:
-
-```text
-I choose the action that has produced the best expected reward in this situation.
-```
-
-So the current model is better described as:
-
-```text
-evolution + simple partner-specific social learning
-```
-
-not:
-
-```text
-evolution + full reinforcement learning
-```
-
----
-
-## Why use this simpler model?
-
-The simple trust model is useful because it directly shows the biological idea:
-
-```text
-evolution shapes learning tendencies
-learning shapes behavior during life
-behavior affects payoff
-payoff affects evolutionary selection
-```
-
-That is the two-timescale process.
-
-It is also easier to understand than full Q-learning.
-
-The goal of this script is not to build an optimal RL agent.
-
-The goal is to demonstrate how evolved predispositions and learned reciprocity can interact.
-
----
-
-## How to extend this to real Q-learning
-
-To make the model closer to true reinforcement learning, replace:
-
-```python
-learned_trust[i, j]
-```
-
-with a Q-table:
-
-```python
-Q[i, j, action]
-```
-
-where `action` is one of:
-
-```python
-COOPERATE = 0
-DEFECT = 1
-```
-
-Then each agent would choose actions using an exploration rule, for example epsilon-greedy:
-
-```python
-if random_number < epsilon:
-    action = random action
-else:
-    action = best known action
-```
-
-After receiving a reward, the agent would update:
-
-```python
-Q[i, j, action] += alpha * (reward - Q[i, j, action])
-```
-
-For a repeated game with longer-term consequences, the update could include a discount factor:
-
-```python
-Q[i, j, action] += alpha * (
-    reward + gamma * max_future_value - Q[i, j, action]
-)
-```
-
-Then evolution could act on inherited RL parameters such as:
-
-```python
-initial_Q_bias
-learning_rate
-exploration_rate
-discount_factor
-forgiveness_bias
-partner_memory_strength
-```
-
-That would create a stronger model of:
-
-```text
-evolution of reinforcement-learning parameters
-+
-learning of cooperation during lifetime
-```
+Each script saves plots to the `output/` folder.
 
 ---
 
@@ -453,11 +288,19 @@ learned_trust[i, j]
 
 Agents interact repeatedly with local neighbors instead of random strangers.
 
-In the script, this is represented by:
+In the trust-learning model (`two_timescale_reciprocity.py`), each agent has **8 ring neighbours** by default (`neighbors_per_agent = 8`):
 
 ```python
-make_ring_neighbors()
+make_ring_neighbors(n, k)   # k = neighbors_per_agent (default 8)
 ```
+
+In the Q-learning and extended models, each agent has **2 ring neighbours** (left and right only):
+
+```python
+make_ring_neighbors(num_agents)   # always 2 neighbours
+```
+
+The network diversity experiment (`experiment_network_diversity.py`) further varies how often agents encounter strangers outside their ring via `stranger_fraction`.
 
 ---
 
@@ -617,7 +460,7 @@ These results use the corrected model where:
 | Learning mechanism | Partner-specific trust updates | Action-value (Q) learning |
 | Action selection | Deterministic threshold | Epsilon-greedy exploration |
 | Future consideration | None | Yes (discount factor) |
-| Actions simultaneous? | No (sequential) | Yes |
+| Actions simultaneous? | No — agent i decides before j observes i's current-round choice | Yes — both agents decide before seeing the other's move |
 
 **Key insight:** With proper Q-learning, repeated-interaction payoff rises to **611** — nearly double the trust-learning model's 313. This is because Q-learning agents discount the *long-term value of the cooperative relationship*, not just a single round, making cooperation even more individually rational over time.
 
@@ -725,7 +568,7 @@ Together they form a coherent social-cognitive system: *assess strangers by repu
 | Metric | Trust learning | Q-learning | Extended |
 |---|---|---|---|
 | Repeated cooperation | 0.979 | 0.560 | 0.380 |
-| Repeated payoff | 313 | 611 | 288 |
+| Repeated payoff | 313.300 | 611.350 | 288.120 |
 | Mechanism | Trust update | Action values | Action values + reputation + exclusion + forgiveness |
 | Exploitable? | Yes (unconditional) | Somewhat | No (partner choice) |
 | Stranger cooperation | No (no reputation) | Via Q-bias | Yes (reputation weight) |
@@ -747,6 +590,156 @@ The extended model sacrifices some payoff compared to basic Q-learning because p
 ![Extended model repeated Q-learning params](output/ext_repeated_ql_params.png)
 
 ![Extended model repeated social params](output/ext_repeated_social_params.png)
+
+---
+
+## Appendix: Simple trust learning vs Q-learning
+
+The trust-learning model uses a simple reinforcement-like update, not full Q-learning. This appendix explains the difference and how the model could be extended.
+
+### What the trust model does
+
+Agents update partner-specific trust:
+
+```python
+learned_trust[i, j] += alpha_i * (target_for_i - learned_trust[i, j])
+```
+
+Where:
+
+```python
+target_for_i = 1.0 if cooperate_j else -1.0
+```
+
+So the agent learns:
+
+```text
+partner cooperated  -> trust goes up
+partner defected    -> trust goes down
+```
+
+This is a simple social-learning rule. The agent is not explicitly learning the value of its own actions — it is learning whether the partner seems trustworthy.
+
+---
+
+### What real Q-learning does
+
+In real Q-learning, an agent learns the expected value of taking an action in a state:
+
+```python
+Q[state, action] = Q[state, action] + alpha * (
+    reward + gamma * max(Q[next_state, next_action]) - Q[state, action]
+)
+```
+
+A Q-learning agent would learn values such as:
+
+```python
+Q[partner, COOPERATE]
+Q[partner, DEFECT]
+```
+
+That is different from merely learning whether the partner is trustworthy.
+
+---
+
+### Feature comparison
+
+| Feature | Trust model | Real Q-learning |
+|---|---|---|
+| Learns about partners? | Yes | Can, if partner identity is part of the state |
+| Learns action values? | No | Yes |
+| Has Q-values? | No | Yes |
+| Has states? | Very limited | Yes |
+| Has actions? | Cooperation is chosen by a threshold rule | Actions are selected from learned values |
+| Uses reward directly? | No, mostly partner behaviour | Yes |
+| Uses future expected reward? | No | Yes |
+| Has discount factor `gamma`? | No | Yes |
+| Has exploration strategy? | Only random mistakes | Usually epsilon-greedy or softmax |
+| Learns policy from reward? | Not fully | Yes |
+
+---
+
+### Conceptual difference
+
+The trust model says:
+
+```text
+I cooperate if I have enough inherited trust plus learned trust in this partner.
+```
+
+Q-learning says:
+
+```text
+I choose the action that has produced the best expected reward in this situation.
+```
+
+So the trust model is better described as:
+
+```text
+evolution + simple partner-specific social learning
+```
+
+not:
+
+```text
+evolution + full reinforcement learning
+```
+
+---
+
+### Why use the simpler model?
+
+The simple trust model directly captures the biological idea:
+
+```text
+evolution shapes learning tendencies
+learning shapes behavior during life
+behavior affects payoff
+payoff affects evolutionary selection
+```
+
+That is the two-timescale process. It is easier to understand than full Q-learning, and the goal of the trust-learning script is to demonstrate how evolved predispositions and learned reciprocity can interact — not to build an optimal RL agent.
+
+---
+
+### How to extend to real Q-learning
+
+To make the model closer to true reinforcement learning, replace `learned_trust[i, j]` with a Q-table:
+
+```python
+Q[i, j, action]   # action ∈ {COOPERATE, DEFECT}
+```
+
+Agents choose actions epsilon-greedy:
+
+```python
+if random_number < epsilon:
+    action = random action
+else:
+    action = argmax Q[i, j, :]
+```
+
+After each interaction:
+
+```python
+Q[i, j, action] += alpha * (
+    reward + gamma * max_future_value - Q[i, j, action]
+)
+```
+
+Evolution then acts on inherited RL parameters:
+
+```python
+initial_Q_bias
+learning_rate
+exploration_rate
+discount_factor
+forgiveness_bias
+partner_memory_strength
+```
+
+That creates a richer model of *evolution of reinforcement-learning parameters* combined with *learning of cooperation during lifetime* — which is precisely what `two_timescale_q_learning.py` implements.
 
 ---
 
