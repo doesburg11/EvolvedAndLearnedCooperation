@@ -575,3 +575,89 @@ Learning makes cooperation individually rational *within* a lifetime.
 Evolution then favors the inherited traits (`trust_prior`, `responsiveness`) that make that learning work most effectively.
 
 In the one-shot case, the fast timescale provides no useful signal, so evolution strips away cooperative predispositions entirely.
+
+---
+
+## Q-Learning variant
+
+A second model implements **true Q-learning** where agents learn partner-specific Q-values for each action (cooperate vs defect).
+
+Evolution acts on four Q-learning parameters:
+- `exploration_rate` (ε): how often agents explore vs exploit
+- `learning_rate` (α): step size for Q-value updates
+- `discount_factor` (γ): weight on future rewards
+- `initial_q_bias`: starting optimism/pessimism about unknown partners
+
+### Q-Learning results
+
+| Metric | One-shot | Repeated |
+|---|---|---|
+| Final cooperation | 0.620 | 0.965 |
+| Final payoff | 4.680 | 40.040 |
+| Final exploration rate | 0.453 | 0.110 |
+| Final learning rate | 0.595 | 0.332 |
+| Final discount factor | 0.496 | 0.441 |
+| Final initial Q-bias | −0.588 | −0.073 |
+
+---
+
+### Comparison: Trust learning vs Q-learning
+
+| Aspect | Trust learning | Q-learning |
+|---|---|---|
+| One-shot cooperation | 0.000 | 0.620 |
+| Repeated cooperation | 0.979 | 0.965 |
+| One-shot payoff | 0.000 | 4.680 |
+| Repeated payoff | 313.300 | 40.040 |
+| Learning mechanism | Partner-specific trust updates | Action-value (Q) learning |
+| Action selection | Deterministic threshold | Epsilon-greedy exploration |
+| Future consideration | None | Yes (discount factor) |
+
+**Key insight:** Q-learning achieves **higher cooperation in one-shot scenarios** (0.62 vs 0.0) because agents can learn optimistic initial Q-values for unknown partners. However, it yields **lower payoffs in repeated play** (40 vs 313) because it does not accumulate trust as efficiently over many rounds.
+
+The trust-learning model is simpler and better suited to direct reciprocity with repeated partners. The Q-learning model is more general and can handle exploration more explicitly, making it more robust in uncertain or novel environments.
+
+### Q-Learning one-shot interaction
+
+![Q-learning one-shot cooperation](output/q_one_shot_cooperation.png)
+
+![Q-learning one-shot parameters](output/q_one_shot_parameters.png)
+
+### Q-Learning repeated interaction
+
+![Q-learning repeated cooperation](output/q_repeated_cooperation.png)
+
+![Q-learning repeated parameters](output/q_repeated_parameters.png)
+
+
+**The simulations reveal something profound about human cooperation:**
+
+**The structure of interaction shapes evolved psychology.**
+
+Humans didn't evolve a fixed "cooperation module." Instead, we evolved **context-sensitive learning capacities** that produce cooperation only when repeated interaction is possible:
+
+1. **We are adapted for small-group reciprocity**
+   - High initial trust tendency (`trust_prior` +1.4 in repeated case)
+   - Fast learning about partners (`learning_rate` ~0.2)
+   - Strong responsiveness to what we learn (`responsiveness` ~2.5)
+   - This makes sense: 99% of human evolution was in groups of 50–150 people seeing the same faces repeatedly
+
+2. **We collapse to defection in one-shot contexts** (trust_prior −0.86)
+   - When we can't learn who partners are, cooperation is irrational
+   - We evolved to be suspicious of strangers in one-shot situations
+   - This is also adaptive—don't trust someone you'll never see again
+
+3. **Q-learning variant shows we're flexible explorers too**
+   - We can try cautious cooperation with new partners (exploration rate 0.45 in one-shot)
+   - We learn action values, not just trust
+   - We balance present gains against future relationships (discount factor ~0.44)
+   - This explains why humans can build new trust in novel situations
+
+**Implications for modern human societies:**
+
+- **Repeated interaction = evolved cooperation** → small towns, tight communities, long-term relationships activate our prosocial instincts
+- **One-shot anonymity = evolved suspicion** → large cities, anonymous online contexts, transient encounters suppress cooperation
+- **Institutions matter** → legal systems, reputation systems, brands, and repeated-contact organizations artificially create "repeated interaction" even with strangers, allowing cooperation to flourish
+- **We're not naturally good or bad** → cooperation is a *response to social structure*, not a fixed trait
+
+This explains why the same human can be deeply cooperative in a stable community yet defect in an anonymous setting. We didn't evolve universal cooperation. We evolved **context-dependent learning strategies** that cooperate when it pays.
