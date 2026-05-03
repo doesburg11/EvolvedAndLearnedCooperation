@@ -256,7 +256,6 @@ def run_q_learning(
                 )
             )
         agents = new_agents
-        final_payoffs = np.array([a.payoff for a in agents])
         for a in agents:
             a.reset()
 
@@ -445,7 +444,6 @@ def run_extended(
                 )
             )
         agents = new_agents
-        final_payoffs_ext = np.array([a.payoff for a in agents])
         for a in agents:
             a.reset()
 
