@@ -75,7 +75,7 @@ The three models differ in how many neighbors each agent has:
 
 Model 1 uses a **ring lattice** (each agent connects to the k nearest on each side). Models 2 and 3 use a **plain ring** (each agent connects only to its immediate left and right neighbor).
 
-![Ring lattice diagram](output/ring_network_visual.png)
+<p align="center"><img src="output/ring_network_visual.png" width="50%" alt="Ring lattice diagram"/></p>
 
 Edge colours in the diagram show neighbor distance in Model 1: dark green = 1 step, light green = 2, yellow = 3, orange = 4. The diagram uses 12 agents for readability; Model 1 uses 120.
 
@@ -465,9 +465,9 @@ Without repeated contact agents cannot learn who cooperates, so reciprocity neve
 
 Evolution responds by driving `trust_prior` negative (−0.86): selection favors innate suspicion because unconditional cooperators are exploited. `responsiveness` stays moderate but is effectively irrelevant when there is nothing useful to learn in a single round.
 
-![One-shot cooperation](output/one_shot_cooperation.png)
+<p align="center"><img src="output/one_shot_cooperation.png" width="50%" alt="One-shot cooperation"/></p>
 
-![One-shot evolved traits](output/one_shot_traits.png)
+<p align="center"><img src="output/one_shot_traits.png" width="50%" alt="One-shot evolved traits"/></p>
 
 ---
 
@@ -483,9 +483,9 @@ With 80 rounds per generation, cooperation stabilizes near full (~98%).
 
 The dip around generation 45–55 is a classic invasion event: a defector lineage briefly spreads, trust collapses, and cooperation crashes. The population recovers because reciprocators with high `responsiveness` re-establish cooperation faster than defectors can spread.
 
-![Repeated interaction cooperation](output/repeated_cooperation.png)
+<p align="center"><img src="output/repeated_cooperation.png" width="50%" alt="Repeated interaction cooperation"/></p>
 
-![Repeated interaction evolved traits](output/repeated_traits.png)
+<p align="center"><img src="output/repeated_traits.png" width="50%" alt="Repeated interaction evolved traits"/></p>
 
 ---
 
@@ -610,15 +610,15 @@ That middle ground — *trust but verify, cooperate but don't be naive* — is l
 
 ### Q-Learning one-shot interaction
 
-![Q-learning one-shot cooperation](output/q_one_shot_cooperation.png)
+<p align="center"><img src="output/q_one_shot_cooperation.png" width="50%" alt="Q-learning one-shot cooperation"/></p>
 
-![Q-learning one-shot parameters](output/q_one_shot_parameters.png)
+<p align="center"><img src="output/q_one_shot_parameters.png" width="50%" alt="Q-learning one-shot parameters"/></p>
 
 ### Q-Learning repeated interaction
 
-![Q-learning repeated cooperation](output/q_repeated_cooperation.png)
+<p align="center"><img src="output/q_repeated_cooperation.png" width="50%" alt="Q-learning repeated cooperation"/></p>
 
-![Q-learning repeated parameters](output/q_repeated_parameters.png)
+<p align="center"><img src="output/q_repeated_parameters.png" width="50%" alt="Q-learning repeated parameters"/></p>
 
 ---
 
@@ -699,19 +699,19 @@ The extended model sacrifices some payoff compared to basic Q-learning because p
 
 ### Extended model — one-shot interaction
 
-![Extended model one-shot cooperation](output/ext_one_shot_cooperation.png)
+<p align="center"><img src="output/ext_one_shot_cooperation.png" width="50%" alt="Extended model one-shot cooperation"/></p>
 
-![Extended model one-shot Q-learning params](output/ext_one_shot_ql_params.png)
+<p align="center"><img src="output/ext_one_shot_ql_params.png" width="50%" alt="Extended model one-shot Q-learning params"/></p>
 
-![Extended model one-shot social params](output/ext_one_shot_social_params.png)
+<p align="center"><img src="output/ext_one_shot_social_params.png" width="50%" alt="Extended model one-shot social params"/></p>
 
 ### Extended model — repeated interaction
 
-![Extended model repeated cooperation](output/ext_repeated_cooperation.png)
+<p align="center"><img src="output/ext_repeated_cooperation.png" width="50%" alt="Extended model repeated cooperation"/></p>
 
-![Extended model repeated Q-learning params](output/ext_repeated_ql_params.png)
+<p align="center"><img src="output/ext_repeated_ql_params.png" width="50%" alt="Extended model repeated Q-learning params"/></p>
 
-![Extended model repeated social params](output/ext_repeated_social_params.png)
+<p align="center"><img src="output/ext_repeated_social_params.png" width="50%" alt="Extended model repeated social params"/></p>
 
 ---
 
@@ -915,7 +915,7 @@ The simulation shows that these mechanisms are not cultural add-ons — they are
 
 ### Chart
 
-![Payoff vs stranger exposure across three models](output/experiment_network_diversity.png)
+<p align="center"><img src="output/experiment_network_diversity.png" width="50%" alt="Payoff vs stranger exposure across three models"/></p>
 
 
 **The simulations reveal something profound about human cooperation:**
