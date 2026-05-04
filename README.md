@@ -153,6 +153,8 @@ This is the slow, evolutionary, or "nature" layer.
 
 ## Inherited traits
 
+> These three traits are specific to **Model 1** (`two_timescale_reciprocity.py`). Model 2 evolves four different Q-learning parameters; Model 3 evolves those four plus three social parameters. See the [Model 2](#model-2--q-learning) and [Model 3](#model-3--extended-reputation--partner-choice--forgiveness) sections for details.
+
 Each agent has three inherited traits.
 
 ### `trust_prior`
@@ -532,12 +534,6 @@ learning_rate      # α — step size for Q-value updates
 discount_factor    # γ — weight on future rewards
 initial_q_bias     # starting optimism/pessimism about unknown partners
 ```
-
-Evolution acts on four Q-learning parameters:
-- `exploration_rate` (ε): how often agents explore vs exploit
-- `learning_rate` (α): step size for Q-value updates
-- `discount_factor` (γ): weight on future rewards
-- `initial_q_bias`: starting optimism/pessimism about unknown partners
 
 ### Q-Learning results
 
