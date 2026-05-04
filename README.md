@@ -49,14 +49,14 @@ A fourth script, `experiment_network_diversity.py`, runs all three models across
 6. [The ring network](#the-ring-network)
 7. [Output](#output)
 8. [How to run](#how-to-run)
-8. [Relation to cooperation mechanisms](#relation-to-cooperation-mechanisms)
-9. [Mechanisms not yet included](#mechanisms-not-yet-included)
-10. [Summary](#summary)
-11. [Simulation results](#simulation-results)
-12. [Q-Learning variant](#q-learning-variant)
-13. [Extended model](#extended-model-reputation--partner-choice--forgiveness)
-14. [Network diversity experiment](#experiment-does-reputation-dominate-in-larger-more-diverse-networks)
-15. [Appendix: Simple trust learning vs Q-learning](#appendix-simple-trust-learning-vs-q-learning)
+9. [Relation to cooperation mechanisms](#relation-to-cooperation-mechanisms)
+10. [Mechanisms not yet included](#mechanisms-not-yet-included)
+11. [Summary](#summary)
+12. [Simulation results](#simulation-results)
+13. [Model 2 — Q-learning](#model-2--q-learning)
+14. [Model 3 — Extended (reputation + partner choice + forgiveness)](#model-3--extended-reputation--partner-choice--forgiveness)
+15. [Network diversity experiment](#experiment-does-reputation-dominate-in-larger-more-diverse-networks)
+16. [Appendix: Simple trust learning vs Q-learning](#appendix-simple-trust-learning-vs-q-learning)
 
 ---
 
@@ -497,7 +497,7 @@ In the one-shot case, the fast timescale provides no useful signal, so evolution
 
 ---
 
-## Q-Learning variant
+## Model 2 — Q-learning
 
 A second model (`two_timescale_q_learning.py`) replaces the simple trust scalar with **true Q-learning**. The two-timescale structure is the same as Model 1 — fast learning within a lifetime, slow evolution between generations — but the learning mechanism is more principled.
 
@@ -624,7 +624,7 @@ That middle ground — *trust but verify, cooperate but don't be naive* — is l
 
 ---
 
-## Extended model: reputation + partner choice + forgiveness
+## Model 3 — Extended (reputation + partner choice + forgiveness)
 
 A third model (`two_timescale_extended.py`) keeps Q-learning from Model 2 and adds three social mechanisms that make the world more like human society: agents can learn about strangers through **reputation**, they can **refuse** to interact with low-reputation partners, and they can **forgive** partners who reform after a betrayal.
 
