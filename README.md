@@ -19,6 +19,26 @@ Agents can cooperate or defect. Cooperation costs the actor something but gives 
 
 ---
 
+## Three models in rising complexity
+
+The project contains three simulation scripts, each adding one layer of social complexity on top of the previous:
+
+| # | Script | Learning mechanism | Extra social features |
+|---|---|---|---|
+| 1 | `two_timescale_reciprocity.py` | Simple trust update (Rescorla–Wagner style) | — |
+| 2 | `two_timescale_q_learning.py` | Q-learning (action-value estimates) | — |
+| 3 | `two_timescale_extended.py` | Q-learning | Reputation, partner choice, forgiveness |
+
+**Model 1 — Trust learning** is the baseline. Agents update a scalar trust value for each partner after every interaction and act on it. It is the simplest possible form of learned reciprocity.
+
+**Model 2 — Q-learning** replaces the trust update with a proper reinforcement-learning rule. Agents maintain separate value estimates for cooperating and defecting with each partner, and choose the action with the higher expected return. This gives agents a more principled learning algorithm.
+
+**Model 3 — Extended** keeps Q-learning but adds three mechanisms that make social life richer: agents can observe a partner's *reputation* (how others rate them), they can *choose* to avoid low-reputation partners, and they have a *forgiveness* parameter that lets them recover trust after a defection rather than permanently writing a partner off.
+
+A fourth script, `experiment_network_diversity.py`, runs all three models across a range of network conditions to compare how each one handles more or less repeated interaction with strangers.
+
+---
+
 ## Contents
 
 1. [Main idea](#main-idea)
