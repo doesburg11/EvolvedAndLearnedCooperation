@@ -41,7 +41,7 @@ A fourth script, `experiment_network_diversity.py`, runs all three models across
 
 ## Contents
 
-1. [Main idea](#main-idea)
+1. [Model 1 — Trust learning](#model-1--trust-learning)
 2. [Inherited traits](#inherited-traits)
 3. [The core decision rule](#the-core-decision-rule)
 4. [Payoff structure](#payoff-structure)
@@ -60,7 +60,9 @@ A fourth script, `experiment_network_diversity.py`, runs all three models across
 
 ---
 
-## Main idea
+## Model 1 — Trust learning
+
+This section describes the baseline model (`two_timescale_reciprocity.py`). The two-timescale structure below applies to all three models, but the specific learning mechanism and inherited traits are unique to Model 1.
 
 The model separates two processes:
 
@@ -497,7 +499,37 @@ In the one-shot case, the fast timescale provides no useful signal, so evolution
 
 ## Q-Learning variant
 
-A second model implements **true Q-learning** where agents learn partner-specific Q-values for each action (cooperate vs defect).
+A second model (`two_timescale_q_learning.py`) replaces the simple trust scalar with **true Q-learning**. The two-timescale structure is the same as Model 1 — fast learning within a lifetime, slow evolution between generations — but the learning mechanism is more principled.
+
+### 1. Learning during a lifetime
+
+Instead of a single trust value, each agent keeps two **Q-values** per partner: one for cooperating with them and one for defecting.
+
+```python
+Q[i, j, COOPERATE]   # expected payoff if i cooperates with j
+Q[i, j, DEFECT]      # expected payoff if i defects against j
+```
+
+After each interaction the agent updates the Q-value for the action it took:
+
+```text
+new Q = old Q + α × (reward + γ × max future Q  −  old Q)
+```
+
+The key addition over Model 1 is the **discount factor γ**: agents value the long-term relationship, not just the current round. An agent that cooperates now expects future cooperation to follow, so it "prices in" the future value of a good relationship.
+
+Action selection uses **ε-greedy** exploration: with probability ε the agent tries a random action, otherwise it picks whichever action has the higher Q-value for that partner.
+
+### 2. Evolution between generations
+
+Agents with higher lifetime payoff reproduce more. Their offspring inherit four evolved Q-learning parameters, then slightly mutate:
+
+```python
+exploration_rate   # ε — how often to try random actions
+learning_rate      # α — step size for Q-value updates
+discount_factor    # γ — weight on future rewards
+initial_q_bias     # starting optimism/pessimism about unknown partners
+```
 
 Evolution acts on four Q-learning parameters:
 - `exploration_rate` (ε): how often agents explore vs exploit
@@ -594,7 +626,25 @@ That middle ground — *trust but verify, cooperate but don't be naive* — is l
 
 ## Extended model: reputation + partner choice + forgiveness
 
-A third model adds three interacting mechanisms on top of Q-learning.
+A third model (`two_timescale_extended.py`) keeps Q-learning from Model 2 and adds three social mechanisms that make the world more like human society: agents can learn about strangers through **reputation**, they can **refuse** to interact with low-reputation partners, and they can **forgive** partners who reform after a betrayal.
+
+### 1. Learning during a lifetime
+
+As in Model 2, agents maintain partner-specific Q-values and update them after every interaction. Three new processes run on top of this:
+
+- **Reputation**: after each interaction both agents update a publicly visible reputation score for their partner. Other agents can read this score before meeting a stranger.
+- **Partner choice**: before accepting an interaction, an agent checks the partner's reputation against its evolved `rejection_threshold`. If the partner falls below it, the interaction is refused — the partner earns no payoff and loses further reputation.
+- **Forgiveness**: after a betrayal, the Q-value for the defecting partner is penalised. But each subsequent round the penalty decays toward zero at a rate set by the evolved `forgiveness_rate`, allowing the relationship to recover if the partner starts cooperating again.
+
+### 2. Evolution between generations
+
+Offspring inherit the four Q-learning parameters from Model 2 plus three new social parameters:
+
+```python
+rejection_threshold   # minimum reputation to accept an interaction
+forgiveness_rate      # per-round decay of post-betrayal Q-penalty
+reputation_weight     # how strongly public reputation shifts the Q-prior for strangers
+```
 
 ### New evolved parameters
 
