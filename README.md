@@ -26,8 +26,9 @@ Agents can cooperate or defect. Cooperation costs the actor something but gives 
 3. [The core decision rule](#the-core-decision-rule)
 4. [Payoff structure](#payoff-structure)
 5. [Why compare one-shot and repeated interaction?](#why-compare-one-shot-and-repeated-interaction)
-6. [Output](#output)
-7. [How to run](#how-to-run)
+6. [The ring network](#the-ring-network)
+7. [Output](#output)
+8. [How to run](#how-to-run)
 8. [Relation to cooperation mechanisms](#relation-to-cooperation-mechanisms)
 9. [Mechanisms not yet included](#mechanisms-not-yet-included)
 10. [Summary](#summary)
@@ -202,6 +203,32 @@ They can learn who cooperates and who defects.
 This allows direct reciprocity to matter.
 
 Selection can then favor inherited traits that make reciprocal cooperation work better.
+
+---
+
+## The ring network
+
+Agents do not interact with the whole population at random. Instead, each agent is placed on a **ring lattice**: a circle where every agent is connected only to its nearest neighbors.
+
+With the default settings:
+
+```python
+population_size    = 120  # agents on the ring
+neighbors_per_agent = 8   # 4 neighbors to the left, 4 to the right
+```
+
+Agent `i` can only ever meet agents `i−4, i−3, i−2, i−1, i+1, i+2, i+3, i+4` (wrapping around at the ends). Agents on opposite sides of the ring never meet.
+
+![Ring lattice diagram](output/ring_network_visual.png)
+
+Edge colours show how many steps apart two agents are: dark green = 1 step, light green = 2, yellow = 3, orange = 4. The diagram uses 12 agents for readability; the actual simulation uses 120.
+
+This structure has two important consequences:
+
+1. **Repeated local encounters** — the same pairs meet many times per lifetime, giving trust learning something useful to learn.
+2. **Local spread of cooperation** — a cluster of cooperators among neighbors is not immediately exploited by defectors from across the population; it can grow before defectors reach it.
+
+This is why the ring network is sometimes called a *network reciprocity* mechanism. It is the spatial analogue of repeated interaction.
 
 ---
 

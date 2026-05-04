@@ -113,7 +113,7 @@ def interact(
     payoff: np.ndarray,
     params: Params,
     rng: np.random.Generator,
-) -> int:
+) -> tuple[int, bool, bool]:
     """
     One social interaction.
 
@@ -367,8 +367,12 @@ if __name__ == "__main__":
     )
     repeated = run_simulation(
         repeated_params,
-        generation_callback=rep_viewer.update_generation if rep_viewer else None,
-        round_callback=rep_viewer.update_encounter_round if rep_viewer else None,
+        generation_callback=(
+            rep_viewer.update_generation if rep_viewer else None
+        ),
+        round_callback=(
+            rep_viewer.update_encounter_round if rep_viewer else None
+        ),
     )
     summarize(repeated, "Repeated interaction")
 
