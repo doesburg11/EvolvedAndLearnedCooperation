@@ -42,22 +42,62 @@ A fourth script, `experiment_network_diversity.py`, runs all three models across
 ## Contents
 
 1. [Three models in rising complexity](#three-models-in-rising-complexity)
-2. [Model 1 — Trust learning](#model-1--trust-learning)
+2. [The ring network (all models)](#the-ring-network)
+3. [Model 1 — Trust learning](#model-1--trust-learning)
    - [Inherited traits](#inherited-traits)
    - [The core decision rule](#the-core-decision-rule)
    - [Payoff structure](#payoff-structure)
    - [Why compare one-shot and repeated interaction?](#why-compare-one-shot-and-repeated-interaction)
-   - [The ring network](#the-ring-network)
    - [Output](#output)
    - [How to run](#how-to-run)
    - [Relation to cooperation mechanisms](#relation-to-cooperation-mechanisms)
    - [Mechanisms not yet included](#mechanisms-not-yet-included)
    - [Summary](#summary)
    - [Simulation results](#simulation-results)
-3. [Model 2 — Q-learning](#model-2--q-learning)
-4. [Model 3 — Extended (reputation + partner choice + forgiveness)](#model-3--extended-reputation--partner-choice--forgiveness)
-5. [Network diversity experiment](#experiment-does-reputation-dominate-in-larger-more-diverse-networks)
-6. [Appendix: Simple trust learning vs Q-learning](#appendix-simple-trust-learning-vs-q-learning)
+4. [Model 2 — Q-learning](#model-2--q-learning)
+5. [Model 3 — Extended (reputation + partner choice + forgiveness)](#model-3--extended-reputation--partner-choice--forgiveness)
+6. [Network diversity experiment](#experiment-does-reputation-dominate-in-larger-more-diverse-networks)
+7. [Appendix: Simple trust learning vs Q-learning](#appendix-simple-trust-learning-vs-q-learning)
+
+---
+
+## The ring network
+
+All three models place agents on a **ring network**: a circle where each agent interacts only with nearby neighbors, not with the whole population. This creates the repeated local encounters that make learned reciprocity possible.
+
+The three models differ in how many neighbors each agent has:
+
+| Model | Script | Neighbors per agent | Configurable? |
+|---|---|---|---|
+| 1 | `two_timescale_reciprocity.py` | 8 (4 left, 4 right) | Yes — `neighbors_per_agent` |
+| 2 | `two_timescale_q_learning.py` | 2 (1 left, 1 right) | No |
+| 3 | `two_timescale_extended.py` | 2 (1 left, 1 right) | No |
+
+Model 1 uses a **ring lattice** (each agent connects to the k nearest on each side). Models 2 and 3 use a **plain ring** (each agent connects only to its immediate left and right neighbor).
+
+![Ring lattice diagram](output/ring_network_visual.png)
+
+Edge colours in the diagram show neighbor distance in Model 1: dark green = 1 step, light green = 2, yellow = 3, orange = 4. The diagram uses 12 agents for readability; Model 1 uses 120.
+
+This structure has two important consequences for all models:
+
+1. **Repeated local encounters** — the same pairs meet many times per lifetime, giving trust learning something useful to learn.
+2. **Local spread of cooperation** — a cluster of cooperators among neighbors is not immediately exploited by defectors from across the population; it can grow before defectors reach it.
+
+### Why not a grid or torus?
+
+A **grid** (2D lattice) would also produce local encounters, but agents at corners and edges have fewer neighbors than those in the center, breaking the symmetry. A **torus** — a grid where the left/right and top/bottom edges wrap around — fixes that problem, giving every agent the same number of neighbors with no boundaries.
+
+| Property | Ring | Torus |
+|---|---|---|
+| Dimensions | 1D | 2D |
+| Boundary effects | None (wraps) | None (wraps) |
+| Degree symmetry | Perfect | Perfect |
+| Cluster shape | Linear bands | 2D patches |
+
+The torus would actually produce *higher and more stable cooperation* than the ring under the same parameters — not because of better learning, but because 2D patches of cooperators have a smaller exposed surface relative to their size, giving them more geometric protection from invading defectors. That makes it harder to isolate whether cooperation is driven by **learned reciprocity** or by **spatial geometry**.
+
+The ring is the simpler, more controlled choice: it provides enough local structure to test repeated-interaction effects while keeping spatial geometry effects minimal and interpretable.
 
 ---
 
@@ -228,45 +268,6 @@ This allows direct reciprocity to matter.
 Selection can then favor inherited traits that make reciprocal cooperation work better.
 
 ---
-
-## The ring network
-
-Agents do not interact with the whole population at random. Instead, each agent is placed on a **ring lattice**: a circle where every agent is connected only to its nearest neighbors.
-
-With the default settings:
-
-```python
-population_size    = 120  # agents on the ring
-neighbors_per_agent = 8   # 4 neighbors to the left, 4 to the right
-```
-
-Agent `i` can only ever meet agents `i−4, i−3, i−2, i−1, i+1, i+2, i+3, i+4` (wrapping around at the ends). Agents on opposite sides of the ring never meet.
-
-![Ring lattice diagram](output/ring_network_visual.png)
-
-Edge colours show how many steps apart two agents are: dark green = 1 step, light green = 2, yellow = 3, orange = 4. The diagram uses 12 agents for readability; the actual simulation uses 120.
-
-This structure has two important consequences:
-
-1. **Repeated local encounters** — the same pairs meet many times per lifetime, giving trust learning something useful to learn.
-2. **Local spread of cooperation** — a cluster of cooperators among neighbors is not immediately exploited by defectors from across the population; it can grow before defectors reach it.
-
-This is why the ring network is sometimes called a *network reciprocity* mechanism. It is the spatial analogue of repeated interaction.
-
-### Why not a grid or torus?
-
-A **grid** (2D lattice) would also produce local encounters, but agents at corners and edges have fewer neighbors than those in the center, breaking the symmetry. A **torus** — a grid where the left/right and top/bottom edges wrap around — fixes that problem, giving every agent the same number of neighbors with no boundaries.
-
-| Property | Ring | Torus |
-|---|---|---|
-| Dimensions | 1D | 2D |
-| Boundary effects | None (wraps) | None (wraps) |
-| Degree symmetry | Perfect | Perfect |
-| Cluster shape | Linear bands | 2D patches |
-
-The torus would actually produce *higher and more stable cooperation* than the ring under the same parameters — not because of better learning, but because 2D patches of cooperators have a smaller exposed surface relative to their size, giving them more geometric protection from invading defectors. That makes it harder to isolate whether cooperation is driven by **learned reciprocity** or by **spatial geometry**.
-
-The ring is the simpler, more controlled choice: it provides enough local structure to test repeated-interaction effects while keeping spatial geometry effects minimal and interpretable.
 
 ---
 
