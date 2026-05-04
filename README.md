@@ -151,13 +151,13 @@ This is the slow, evolutionary, or "nature" layer.
 
 ---
 
-## Inherited traits
+### Inherited traits
 
 > These three traits are specific to **Model 1** (`two_timescale_reciprocity.py`). Model 2 evolves four different Q-learning parameters; Model 3 evolves those four plus three social parameters. See the [Model 2](#model-2--q-learning) and [Model 3](#model-3--extended-reputation--partner-choice--forgiveness) sections for details.
 
 Each agent has three inherited traits.
 
-### `trust_prior`
+#### `trust_prior`
 
 The agent's initial tendency to cooperate with an unknown partner.
 
@@ -167,7 +167,7 @@ A low or negative value means the agent starts out more suspicious.
 
 ---
 
-### `learning_rate`
+#### `learning_rate`
 
 How quickly the agent updates trust after experience.
 
@@ -177,7 +177,7 @@ A low learning rate means the agent changes slowly.
 
 ---
 
-### `responsiveness`
+#### `responsiveness`
 
 How strongly learned trust affects future behavior.
 
@@ -187,7 +187,7 @@ A low responsiveness means the agent mostly ignores learned trust.
 
 ---
 
-## The core decision rule
+### The core decision rule
 
 The most important line in the model is:
 
@@ -213,7 +213,7 @@ It is the result of both.
 
 ---
 
-## Payoff structure
+### Payoff structure
 
 The model uses a donation-game version of the Prisoner's Dilemma.
 
@@ -237,11 +237,11 @@ However, cooperation can still be individually risky, because a defector can rec
 
 ---
 
-## Why compare one-shot and repeated interaction?
+### Why compare one-shot and repeated interaction?
 
 The script runs two scenarios.
 
-### Scenario 1: Mostly one-shot interaction
+#### Scenario 1: Mostly one-shot interaction
 
 ```python
 lifetime_rounds = 1
@@ -255,7 +255,7 @@ This usually makes cooperation harder to maintain.
 
 ---
 
-### Scenario 2: Repeated interaction
+#### Scenario 2: Repeated interaction
 
 ```python
 lifetime_rounds = 80
@@ -273,7 +273,7 @@ Selection can then favor inherited traits that make reciprocal cooperation work 
 
 ---
 
-## Output
+### Output
 
 The script prints summary statistics such as:
 
@@ -300,7 +300,7 @@ It shows whether cooperation increases, collapses, or remains unstable over gene
 
 ---
 
-## How to run
+### How to run
 
 Activate the project conda environment:
 
@@ -348,11 +348,11 @@ Each script saves plots to the `output/` folder.
 
 ---
 
-## Relation to cooperation mechanisms
+### Relation to cooperation mechanisms
 
 This model mainly includes two cooperation mechanisms:
 
-### Direct reciprocity
+#### Direct reciprocity
 
 Agents condition behavior on previous interactions with the same partner.
 
@@ -364,7 +364,7 @@ learned_trust[i, j]
 
 ---
 
-### Network reciprocity
+#### Network reciprocity
 
 Agents interact repeatedly with local neighbors instead of random strangers.
 
@@ -384,11 +384,11 @@ The network diversity experiment (`experiment_network_diversity.py`) further var
 
 ---
 
-## Mechanisms not yet included
+### Mechanisms not yet included
 
 The current model does not yet include:
 
-### Kin selection
+#### Kin selection
 
 Agents do not know who their relatives are.
 
@@ -396,7 +396,7 @@ To add this, give agents family IDs and add extra cooperation tendency toward ki
 
 ---
 
-### Indirect reciprocity
+#### Indirect reciprocity
 
 Agents do not observe reputation.
 
@@ -404,7 +404,7 @@ To add this, create public reputation scores that increase when agents cooperate
 
 ---
 
-### Group selection
+#### Group selection
 
 Groups do not reproduce or die as units.
 
@@ -412,7 +412,7 @@ To add this, divide agents into groups and allow high-performing groups to contr
 
 ---
 
-## Summary
+### Summary
 
 This model demonstrates a mutual process between evolution and learning.
 
@@ -441,11 +441,11 @@ selection: reproductive success
 
 ---
 
-## Simulation results
+### Simulation results
 
 The results below come from a single run with default parameters (120 generations, 100 agents, ring topology, `benefit=3.0`, `cost=1.0`).
 
-### Final statistics
+#### Final statistics
 
 | Metric | One-shot (`rounds=1`) | Repeated (`rounds=80`) |
 |---|---|---|
@@ -457,7 +457,7 @@ The results below come from a single run with default parameters (120 generation
 
 ---
 
-### One-shot interaction
+#### One-shot interaction
 
 Without repeated contact agents cannot learn who cooperates, so reciprocity never gets off the ground.
 
@@ -471,7 +471,7 @@ Evolution responds by driving `trust_prior` negative (−0.86): selection favors
 
 ---
 
-### Repeated interaction
+#### Repeated interaction
 
 With 80 rounds per generation, cooperation stabilizes near full (~98%).
 
@@ -489,7 +489,7 @@ The dip around generation 45–55 is a classic invasion event: a defector lineag
 
 ---
 
-### Core message
+#### Core message
 
 The two timescales reinforce each other in the repeated case.
 
