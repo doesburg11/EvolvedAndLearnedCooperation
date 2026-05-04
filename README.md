@@ -230,6 +230,21 @@ This structure has two important consequences:
 
 This is why the ring network is sometimes called a *network reciprocity* mechanism. It is the spatial analogue of repeated interaction.
 
+### Why not a grid or torus?
+
+A **grid** (2D lattice) would also produce local encounters, but agents at corners and edges have fewer neighbors than those in the center, breaking the symmetry. A **torus** — a grid where the left/right and top/bottom edges wrap around — fixes that problem, giving every agent the same number of neighbors with no boundaries.
+
+| Property | Ring | Torus |
+|---|---|---|
+| Dimensions | 1D | 2D |
+| Boundary effects | None (wraps) | None (wraps) |
+| Degree symmetry | Perfect | Perfect |
+| Cluster shape | Linear bands | 2D patches |
+
+The torus would actually produce *higher and more stable cooperation* than the ring under the same parameters — not because of better learning, but because 2D patches of cooperators have a smaller exposed surface relative to their size, giving them more geometric protection from invading defectors. That makes it harder to isolate whether cooperation is driven by **learned reciprocity** or by **spatial geometry**.
+
+The ring is the simpler, more controlled choice: it provides enough local structure to test repeated-interaction effects while keeping spatial geometry effects minimal and interpretable.
+
 ---
 
 ## Output
