@@ -32,9 +32,12 @@ forgiveness_rate    per-round decay of post-betrayal Q penalty
 reputation_weight   how much public reputation shifts the Q-prior
 """
 
+import argparse
 import dataclasses
 import numpy as np
 import matplotlib.pyplot as plt
+
+from live_viewer import SimulationViewer
 
 
 COOPERATE = 0
@@ -177,7 +180,7 @@ def _interact_pair(
     benefit: float,
     cost: float,
     rng: np.random.Generator,
-) -> None:
+) -> tuple[int | None, int | None]:
     """
     Simultaneous interaction with partner choice, reputation update,
     and forgiveness.
@@ -195,7 +198,7 @@ def _interact_pair(
             _update_reputation(j, cooperated=False)
         if not j_accepts:
             _update_reputation(i, cooperated=False)
-        return
+        return None, None
 
     # Simultaneous action selection
     action_i = agent_i.select_action(j, rng)
@@ -238,6 +241,7 @@ def _interact_pair(
     q_c_j, q_d_j = agent_j.get_q(i)
     next_max_q_j = max(q_c_j, q_d_j)
     agent_j.learn(i, action_j, reward_j, next_max_q_j)
+    return action_i, action_j
 
 
 # ---------------------------------------------------------------------------
@@ -251,6 +255,8 @@ def run_simulation(
     benefit: float = 3.0,
     cost: float = 1.0,
     mutation_std: float = 0.1,
+    generation_callback=None,
+    round_callback=None,
 ) -> dict[str, list[float]]:
     """Run the extended simulation."""
     rng = np.random.default_rng(seed=42)
@@ -287,10 +293,17 @@ def run_simulation(
     for _generation in range(num_generations):
         _init_reputation(num_agents)
 
-        for _ in range(lifetime_rounds):
+        for round_idx in range(lifetime_rounds):
+            round_events: list[tuple[int, int, int, int]] = []
             for i in range(num_agents):
                 for j in neighbors[i]:
-                    _interact_pair(agents, i, j, benefit, cost, rng)
+                    act_i, act_j = _interact_pair(
+                        agents, i, j, benefit, cost, rng
+                    )
+                    if act_i is not None and act_j is not None:
+                        round_events.append((i, j, act_i, act_j))
+            if round_callback is not None:
+                round_callback(_generation, round_idx, round_events)
 
         # Cooperation rate: sample across all neighbor pairs
         coop_actions = [
@@ -301,6 +314,8 @@ def run_simulation(
         history["mean_cooperation"].append(
             float(np.mean([a == COOPERATE for a in coop_actions]))
         )
+        if generation_callback is not None:
+            generation_callback(_generation, history["mean_cooperation"][-1])
         history["mean_payoff"].append(
             float(np.mean([a.payoff for a in agents]))
         )
@@ -489,17 +504,50 @@ def plot_history(
 if __name__ == "__main__":
     import os
 
+    parser = argparse.ArgumentParser(
+        description="Run extended two-timescale simulation"
+    )
+    parser.add_argument(
+        "--no-live-grid",
+        action="store_true",
+        help="Disable live cooperation and encounter-matrix windows",
+    )
+    args = parser.parse_args()
+    live = not args.no_live_grid
+
     os.makedirs("output", exist_ok=True)
 
     print("Running extended model (reputation + partner choice + forgiveness)")
     print("This may take a moment...\n")
 
     # One-shot
-    one_shot = run_simulation(lifetime_rounds=1)
+    os_viewer = (
+        SimulationViewer(
+            100, 120, 1,
+            title="One-shot interaction (Extended model)",
+        )
+        if live else None
+    )
+    one_shot = run_simulation(
+        lifetime_rounds=1,
+        generation_callback=os_viewer.update_generation if os_viewer else None,
+        round_callback=os_viewer.update_encounter_round if os_viewer else None,
+    )
     summarize(one_shot, "One-shot interaction (extended model)")
 
     # Repeated
-    repeated = run_simulation(lifetime_rounds=80)
+    rep_viewer = (
+        SimulationViewer(
+            100, 120, 80,
+            title="Repeated interaction (Extended model)",
+        )
+        if live else None
+    )
+    repeated = run_simulation(
+        lifetime_rounds=80,
+        generation_callback=rep_viewer.update_generation if rep_viewer else None,
+        round_callback=rep_viewer.update_encounter_round if rep_viewer else None,
+    )
     summarize(repeated, "Repeated interaction (extended model)")
 
     plot_history(
@@ -513,4 +561,7 @@ if __name__ == "__main__":
         save_prefix="ext_repeated",
     )
 
+    if live:
+        print("\nLive viewer: close plot windows to finish.")
+        plt.ioff()
     plt.show()

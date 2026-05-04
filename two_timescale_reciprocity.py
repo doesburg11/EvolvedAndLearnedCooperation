@@ -1,6 +1,10 @@
+import argparse
+
 import numpy as np
 import matplotlib.pyplot as plt
 from dataclasses import dataclass
+
+from live_viewer import SimulationViewer
 
 
 @dataclass
@@ -161,7 +165,7 @@ def interact(
     learned_trust[i, j] += alpha_i * (target_for_i - learned_trust[i, j])
     learned_trust[j, i] += alpha_j * (target_for_j - learned_trust[j, i])
 
-    return int(cooperate_i) + int(cooperate_j)
+    return int(cooperate_i) + int(cooperate_j), cooperate_i, cooperate_j
 
 
 def reproduce(
@@ -213,7 +217,11 @@ def reproduce(
     return child_genes
 
 
-def run_simulation(params: Params) -> dict[str, list[float]]:
+def run_simulation(
+    params: Params,
+    generation_callback=None,
+    round_callback=None,
+) -> dict[str, list[float]]:
     rng = np.random.default_rng(params.seed)
     n = params.population_size
 
@@ -238,11 +246,12 @@ def run_simulation(params: Params) -> dict[str, list[float]]:
         total_actions = 0
 
         # Fast developmental / learning process.
-        for _ in range(params.lifetime_rounds):
+        for round_idx in range(params.lifetime_rounds):
+            round_events: list[tuple[int, int, int, int]] = []
             for i in range(n):
                 j = int(rng.choice(neighbors[i]))
 
-                cooperative_actions += interact(
+                coop_count, coop_i, coop_j = interact(
                     i=i,
                     j=j,
                     genes=genes,
@@ -251,9 +260,16 @@ def run_simulation(params: Params) -> dict[str, list[float]]:
                     params=params,
                     rng=rng,
                 )
+                cooperative_actions += coop_count
                 total_actions += 2
+                round_events.append((i, j, int(coop_i), int(coop_j)))
+
+            if round_callback is not None:
+                round_callback(generation, round_idx, round_events)
 
         history["mean_cooperation"].append(cooperative_actions / total_actions)
+        if generation_callback is not None:
+            generation_callback(generation, history["mean_cooperation"][-1])
         history["mean_payoff"].append(float(payoff.mean()))
         history["mean_trust_prior"].append(float(genes["trust_prior"].mean()))
         history["mean_learning_rate"].append(
@@ -307,29 +323,69 @@ def summarize(history: dict[str, list[float]], label: str) -> None:
 
 
 if __name__ == "__main__":
-    # Case 1: one-shot social life. Direct reciprocity has little chance to
-    # work.
+    import os
+
+    parser = argparse.ArgumentParser(
+        description="Run trust-learning two-timescale simulation"
+    )
+    parser.add_argument(
+        "--no-live-grid",
+        action="store_true",
+        help="Disable live cooperation and encounter-matrix windows",
+    )
+    args = parser.parse_args()
+    live = not args.no_live_grid
+
+    # Case 1: one-shot social life.
     one_shot_params = Params(lifetime_rounds=1)
-    one_shot = run_simulation(one_shot_params)
+    os_viewer = (
+        SimulationViewer(
+            one_shot_params.population_size,
+            one_shot_params.generations,
+            one_shot_params.lifetime_rounds,
+            title="One-shot interaction (Trust learning)",
+        )
+        if live else None
+    )
+    one_shot = run_simulation(
+        one_shot_params,
+        generation_callback=os_viewer.update_generation if os_viewer else None,
+        round_callback=os_viewer.update_encounter_round if os_viewer else None,
+    )
     summarize(one_shot, "Mostly one-shot interaction")
 
-    # Case 2: repeated social life. Agents can learn who cooperates.
+    # Case 2: repeated social life.
     repeated_params = Params(lifetime_rounds=80)
-    repeated = run_simulation(repeated_params)
+    rep_viewer = (
+        SimulationViewer(
+            repeated_params.population_size,
+            repeated_params.generations,
+            repeated_params.lifetime_rounds,
+            title="Repeated interaction (Trust learning)",
+        )
+        if live else None
+    )
+    repeated = run_simulation(
+        repeated_params,
+        generation_callback=rep_viewer.update_generation if rep_viewer else None,
+        round_callback=rep_viewer.update_encounter_round if rep_viewer else None,
+    )
     summarize(repeated, "Repeated interaction")
 
-    import os
     os.makedirs("output", exist_ok=True)
 
     plot_history(
         one_shot,
         "Mostly one-shot interaction",
-        save_prefix="one_shot"
-        )
+        save_prefix="one_shot",
+    )
     plot_history(
         repeated,
         "Repeated interaction",
-        save_prefix="repeated"
-        )
+        save_prefix="repeated",
+    )
 
+    if live:
+        print("\nLive viewer: close plot windows to finish.")
+        plt.ioff()
     plt.show()

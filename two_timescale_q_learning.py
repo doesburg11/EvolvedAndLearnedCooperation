@@ -9,10 +9,14 @@ This is a more sophisticated model than the simple trust-learning version.
 Agents explicitly learn the expected value of each action with each partner.
 """
 
+import argparse
+
 import dataclasses
 import numpy as np
 import matplotlib.pyplot as plt
 from typing import NamedTuple
+
+from live_viewer import SimulationViewer
 
 
 COOPERATE = 0
@@ -103,7 +107,11 @@ def make_ring_neighbors(num_agents: int) -> list[list[int]]:
     return neighbors
 
 
-def run_simulation(params: Params) -> dict[str, list[float]]:
+def run_simulation(
+    params: Params,
+    generation_callback=None,
+    round_callback=None,
+) -> dict[str, list[float]]:
     """Run a two-timescale Q-learning simulation."""
     rng = np.random.default_rng(seed=42)
 
@@ -132,11 +140,15 @@ def run_simulation(params: Params) -> dict[str, list[float]]:
     # Run generations
     for generation in range(params.num_generations):
         # Lifetime interactions
-        for _ in range(params.lifetime_rounds):
+        for round_idx in range(params.lifetime_rounds):
+            round_events: list[tuple[int, int, int, int]] = []
             for i in range(params.num_agents):
                 for j in neighbors[i]:
                     # Both directions of interaction
-                    _interact_pair(agents, i, j, params, rng)
+                    act_i, act_j = _interact_pair(agents, i, j, params, rng)
+                    round_events.append((i, j, act_i, act_j))
+            if round_callback is not None:
+                round_callback(generation, round_idx, round_events)
 
         # Record statistics
         cooperation = np.mean(
@@ -147,6 +159,8 @@ def run_simulation(params: Params) -> dict[str, list[float]]:
             ]
         )
         history["mean_cooperation"].append(cooperation)
+        if generation_callback is not None:
+            generation_callback(generation, float(cooperation))
         history["mean_payoff"].append(
             np.mean([a.payoff for a in agents])
         )
@@ -206,7 +220,7 @@ def _interact_pair(
     j: int,
     params: Params,
     rng: np.random.Generator,
-) -> None:
+) -> tuple[int, int]:
     """
     Single simultaneous interaction between agents i and j.
 
@@ -252,6 +266,7 @@ def _interact_pair(
 
     agent_i.learn(j, action_i, reward_i, next_max_q_i)
     agent_j.learn(i, action_j, reward_j, next_max_q_j)
+    return action_i, action_j
 
 
 def plot_history(
@@ -325,16 +340,53 @@ def summarize(history: dict[str, list[float]], label: str) -> None:
 if __name__ == "__main__":
     import os
 
+    parser = argparse.ArgumentParser(
+        description="Run Q-learning two-timescale simulation"
+    )
+    parser.add_argument(
+        "--no-live-grid",
+        action="store_true",
+        help="Disable live cooperation and encounter-matrix windows",
+    )
+    args = parser.parse_args()
+    live = not args.no_live_grid
+
     os.makedirs("output", exist_ok=True)
 
     # Case 1: one-shot interaction
     one_shot_params = Params(lifetime_rounds=1)
-    one_shot = run_simulation(one_shot_params)
+    os_viewer = (
+        SimulationViewer(
+            one_shot_params.num_agents,
+            one_shot_params.num_generations,
+            one_shot_params.lifetime_rounds,
+            title="One-shot interaction (Q-learning)",
+        )
+        if live else None
+    )
+    one_shot = run_simulation(
+        one_shot_params,
+        generation_callback=os_viewer.update_generation if os_viewer else None,
+        round_callback=os_viewer.update_encounter_round if os_viewer else None,
+    )
     summarize(one_shot, "One-shot interaction (Q-learning)")
 
     # Case 2: repeated interaction
     repeated_params = Params(lifetime_rounds=80)
-    repeated = run_simulation(repeated_params)
+    rep_viewer = (
+        SimulationViewer(
+            repeated_params.num_agents,
+            repeated_params.num_generations,
+            repeated_params.lifetime_rounds,
+            title="Repeated interaction (Q-learning)",
+        )
+        if live else None
+    )
+    repeated = run_simulation(
+        repeated_params,
+        generation_callback=rep_viewer.update_generation if rep_viewer else None,
+        round_callback=rep_viewer.update_encounter_round if rep_viewer else None,
+    )
     summarize(repeated, "Repeated interaction (Q-learning)")
 
     plot_history(
@@ -346,4 +398,7 @@ if __name__ == "__main__":
         save_prefix="q_repeated",
     )
 
+    if live:
+        print("\nLive viewer: close plot windows to finish.")
+        plt.ioff()
     plt.show()
