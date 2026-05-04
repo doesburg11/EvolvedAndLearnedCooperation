@@ -262,7 +262,19 @@ python two_timescale_extended.py
 
 # Network diversity experiment (all three models across stranger-fraction levels)
 python experiment_network_diversity.py
+
+# Network diversity experiment without live windows (headless)
+python experiment_network_diversity.py --no-live-grid
 ```
+
+In live mode, two windows update in real time: a payoff heatmap across
+models/conditions and a per-generation cooperation plot for the current
+stranger-fraction condition.
+
+Live mode also includes a micro-level encounter matrix window. Each row i,
+column j cell shows agent i's most recent action toward partner j in the
+currently displayed round: green means cooperate (+1), red means defect (-1),
+and dark cells indicate no encounter in that sampled round.
 
 Each script saves plots to the `output/` folder.
 
