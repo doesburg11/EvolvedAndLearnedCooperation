@@ -48,11 +48,8 @@ All three models share the same ring-network topology — see [Appendix: The rin
    - [Inherited traits](#inherited-traits)
    - [The core decision rule](#the-core-decision-rule)
    - [Payoff structure](#payoff-structure)
-   - [Why compare one-shot and repeated interaction?](#why-compare-one-shot-and-repeated-interaction)
    - [Output](#output)
    - [How to run](#how-to-run)
-   - [Relation to cooperation mechanisms](#relation-to-cooperation-mechanisms)
-   - [Mechanisms not yet included](#mechanisms-not-yet-included)
    - [Summary](#summary)
    - [Simulation results](#simulation-results)
 3. [Model 2 — Q-learning](#model-2--q-learning)
@@ -61,6 +58,9 @@ All three models share the same ring-network topology — see [Appendix: The rin
 6. [Appendix: Simple trust learning vs Q-learning](#appendix-simple-trust-learning-vs-q-learning)
 7. [Appendix: Ecological realism of benefit > cost](#appendix-ecological-realism-of-benefit--cost)
 8. [Appendix: The ring network](#appendix-the-ring-network)
+9. [Appendix: Why compare one-shot and repeated interaction?](#appendix-why-compare-one-shot-and-repeated-interaction)
+10. [Appendix: Cooperation mechanisms and model scope](#appendix-cooperation-mechanisms-and-model-scope)
+11. [Appendix: Strategic and psychological interpretation](#appendix-strategic-and-psychological-interpretation)
 
 ---
 
@@ -202,39 +202,7 @@ However, cooperation can still be individually risky, because a defector can rec
 
 ---
 
-### Why compare one-shot and repeated interaction?
-
-The script runs two scenarios.
-
-#### Scenario 1: Mostly one-shot interaction
-
-```python
-lifetime_rounds = 1
-```
-
-Agents barely have time to learn who is trustworthy.
-
-Direct reciprocity has little chance to develop.
-
-This usually makes cooperation harder to maintain.
-
----
-
-#### Scenario 2: Repeated interaction
-
-```python
-lifetime_rounds = 80
-```
-
-Agents repeatedly meet neighbors.
-
-They can learn who cooperates and who defects.
-
-This allows direct reciprocity to matter.
-
-Selection can then favor inherited traits that make reciprocal cooperation work better.
-
----
+> **Why run both scenarios?** See [Appendix: Why compare one-shot and repeated interaction?](#appendix-why-compare-one-shot-and-repeated-interaction) for the rationale behind the two `lifetime_rounds` conditions.
 
 ---
 
@@ -311,69 +279,7 @@ and dark cells indicate no encounter in that sampled round.
 
 Each script saves plots to the `output/` folder.
 
----
-
-### Relation to cooperation mechanisms
-
-This model mainly includes two cooperation mechanisms:
-
-#### Direct reciprocity
-
-Agents condition behavior on previous interactions with the same partner.
-
-In the script, this is represented by:
-
-```python
-learned_trust[i, j]
-```
-
----
-
-#### Network reciprocity
-
-Agents interact repeatedly with local neighbors instead of random strangers.
-
-In the trust-learning model (`two_timescale_reciprocity.py`), each agent has **8 ring neighbours** by default (`neighbors_per_agent = 8`):
-
-```python
-make_ring_neighbors(n, k)   # k = neighbors_per_agent (default 8)
-```
-
-In the Q-learning and extended models, each agent has **2 ring neighbours** (left and right only):
-
-```python
-make_ring_neighbors(num_agents)   # always 2 neighbours
-```
-
-The network diversity experiment (`experiment_network_diversity.py`) further varies how often agents encounter strangers outside their ring via `stranger_fraction`.
-
----
-
-### Mechanisms not yet included
-
-The current model does not yet include:
-
-#### Kin selection
-
-Agents do not know who their relatives are.
-
-To add this, give agents family IDs and add extra cooperation tendency toward kin.
-
----
-
-#### Indirect reciprocity
-
-Agents do not observe reputation.
-
-To add this, create public reputation scores that increase when agents cooperate and decrease when they defect.
-
----
-
-#### Group selection
-
-Groups do not reproduce or die as units.
-
-To add this, divide agents into groups and allow high-performing groups to contribute more offspring to the next generation.
+> **Cooperation theory context:** For how this model relates to direct/network reciprocity and which mechanisms (kin selection, indirect reciprocity, group selection) are deliberately excluded, see [Appendix: Cooperation mechanisms and model scope](#appendix-cooperation-mechanisms-and-model-scope).
 
 ---
 
@@ -537,41 +443,7 @@ However, repeated-interaction cooperation rate is lower (0.56 vs 0.98). Q-learni
 
 The trade-off: **trust learning maximises cooperation rate; Q-learning maximises payoff** by retaining some exploration and leveraging future relationship value more explicitly.
 
----
-
-### What the trade-off means
-
-**Trust-learning agents become unconditional cooperators.**
-Once evolution locks in high `responsiveness` and `trust_prior`, they cooperate with nearly everyone, nearly all the time. This is collectively efficient but individually exploitable — a defector who enters the population gets free benefits.
-
-**Q-learning agents stay strategically selective.**
-They never fully stop exploring (ε stays ~0.11). They occasionally defect — not randomly, but informationally: probing whether a partner is still worth cooperating with. Because `γ > 0`, they also know that a good cooperative relationship has compounding future value, so they actively protect it.
-
-**The result:** Q-learning agents cooperate less often but earn more per round because they:
-
-1. Detect and punish defectors faster
-2. Value long-term cooperative relationships more accurately
-3. Don't blindly cooperate with everyone
-
----
-
-### Implications for human psychology
-
-Humans are probably closer to the Q-learning model than the trust model. We:
-
-- Don't cooperate unconditionally even with close partners
-- Maintain low-level vigilance even in trusted relationships
-- Strongly discount the future in unstable environments (war, poverty) and cooperate more when the future feels secure and long
-- Respond to betrayal with anger rather than just disappointment — because betrayal destroys future relationship value, not just a single round
-
-The high payoff of the Q-learning model reflects an evolutionary logic:
-
-```text
-Strategic, selective cooperation with future-orientation
-outperforms both pure defection and unconditional cooperation.
-```
-
-That middle ground — *trust but verify, cooperate but don't be naive* — is likely what natural selection actually built into the human social mind.
+> **What this means strategically and for human psychology:** See [Appendix: Strategic and psychological interpretation](#appendix-strategic-and-psychological-interpretation) for a deeper analysis of why Q-learning agents earn more while cooperating less, and what this implies about the human social mind.
 
 ### Q-Learning one-shot interaction
 
@@ -995,3 +867,93 @@ A **grid** (2D lattice) would also produce local encounters, but agents at corne
 The torus would actually produce *higher and more stable cooperation* than the ring under the same parameters — not because of better learning, but because 2D patches of cooperators have a smaller exposed surface relative to their size, giving them more geometric protection from invading defectors. That makes it harder to isolate whether cooperation is driven by **learned reciprocity** or by **spatial geometry**.
 
 The ring is the simpler, more controlled choice: it provides enough local structure to test repeated-interaction effects while keeping spatial geometry effects minimal and interpretable.
+
+---
+
+## Appendix: Why compare one-shot and repeated interaction?
+
+The script runs two scenarios to isolate the effect of repeated interaction on the evolution of cooperation.
+
+### Scenario 1: Mostly one-shot interaction
+
+```python
+lifetime_rounds = 1
+```
+
+Agents barely have time to learn who is trustworthy. Direct reciprocity has little chance to develop. This usually makes cooperation harder to maintain because a cooperator cannot distinguish reliable partners from exploiters before selection acts.
+
+### Scenario 2: Repeated interaction
+
+```python
+lifetime_rounds = 80
+```
+
+Agents repeatedly meet the same neighbors. They can learn who cooperates and who defects. This allows direct reciprocity to matter: selection can then favor inherited traits (`trust_prior`, `learning_rate`, `responsiveness`) that make reciprocal cooperation work better.
+
+The contrast between these two conditions is the primary experimental manipulation of Model 1. Running both in a single script produces a clean within-model comparison: same population size, same topology, same payoffs — only the opportunity to learn differs.
+
+---
+
+## Appendix: Cooperation mechanisms and model scope
+
+The models are built around two cooperation mechanisms and deliberately exclude three others.
+
+### Mechanisms included
+
+#### Direct reciprocity
+
+Agents condition behavior on previous interactions with the *same* partner. In the script this is represented by `learned_trust[i, j]` (Model 1) or partner-specific Q-values (Models 2 and 3). Both are forms of direct reciprocity: cooperation is contingent on the partner's past behavior.
+
+#### Network reciprocity
+
+Agents interact repeatedly with local neighbors instead of random strangers. In Model 1 each agent has 8 ring neighbors; in Models 2 and 3 each agent has 2. The network diversity experiment (`experiment_network_diversity.py`) further varies how often agents encounter strangers outside their ring via `stranger_fraction`.
+
+### Mechanisms not yet included
+
+#### Kin selection
+
+Agents do not know who their relatives are. To add this, give agents family IDs and add an extra cooperation tendency toward kin.
+
+#### Indirect reciprocity
+
+Agents do not observe a partner's reputation with *other* agents. Model 3 adds a limited form (reputation scores visible to immediate potential partners), but full indirect reciprocity — where reputation spreads across the whole population — is not implemented.
+
+#### Group selection
+
+Groups do not reproduce or die as units. To add this, divide agents into groups and allow high-performing groups to contribute more offspring to the next generation.
+
+---
+
+## Appendix: Strategic and psychological interpretation
+
+### What the Model 1 vs Model 2 trade-off means
+
+**Trust-learning agents become unconditional cooperators.**
+Once evolution locks in high `responsiveness` and `trust_prior`, they cooperate with nearly everyone, nearly all the time. This is collectively efficient but individually exploitable — a defector who enters the population gets free benefits.
+
+**Q-learning agents stay strategically selective.**
+They never fully stop exploring (ε stays ~0.11). They occasionally defect — not randomly, but informationally: probing whether a partner is still worth cooperating with. Because `γ > 0`, they also know that a good cooperative relationship has compounding future value, so they actively protect it.
+
+**The result:** Q-learning agents cooperate less often but earn more per round because they:
+
+1. Detect and punish defectors faster
+2. Value long-term cooperative relationships more accurately
+3. Don't blindly cooperate with everyone
+
+### Implications for human psychology
+
+Humans are probably closer to the Q-learning model than the trust model. We:
+
+- Don't cooperate unconditionally even with close partners
+- Maintain low-level vigilance even in trusted relationships
+- Strongly discount the future in unstable environments (war, poverty) and cooperate more when the future feels secure and long
+- Respond to betrayal with anger rather than just disappointment — because betrayal destroys future relationship value, not just a single round
+
+The high payoff of the Q-learning model reflects an evolutionary logic:
+
+```text
+Strategic, selective cooperation with future-orientation
+outperforms both pure defection and unconditional cooperation.
+```
+
+That middle ground — *trust but verify, cooperate but don't be naive* — is likely what natural selection actually built into the human social mind.
