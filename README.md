@@ -58,6 +58,7 @@ A fourth script, `experiment_network_diversity.py`, runs all three models across
 5. [Model 3 — Extended (reputation + partner choice + forgiveness)](#model-3--extended-reputation--partner-choice--forgiveness)
 6. [Network diversity experiment](#experiment-does-reputation-dominate-in-larger-more-diverse-networks)
 7. [Appendix: Simple trust learning vs Q-learning](#appendix-simple-trust-learning-vs-q-learning)
+8. [Appendix: Ecological realism of benefit > cost](#appendix-ecological-realism-of-benefit--cost)
 
 ---
 
@@ -234,6 +235,8 @@ cost = 1.0
 So cooperation is socially beneficial, because the recipient gains more than the actor loses.
 
 However, cooperation can still be individually risky, because a defector can receive benefits without paying costs.
+
+> **Why is benefit > cost?** The assumption that a single cooperative act benefits the recipient more than it costs the actor is a deliberate abstraction — not an ecological free lunch. See [Appendix: Ecological realism of benefit > cost](#appendix-ecological-realism-of-benefit--cost) for the justification and limitations.
 
 ---
 
@@ -949,3 +952,44 @@ Humans didn't evolve a fixed "cooperation module." Instead, we evolved **context
 - **We're not naturally good or bad** → cooperation is a *response to social structure*, not a fixed trait
 
 This explains why the same human can be deeply cooperative in a stable community yet defect in an anonymous setting. We didn't evolve universal cooperation. We evolved **context-dependent learning strategies** that cooperate when it pays.
+
+---
+
+## Appendix: Ecological realism of benefit > cost
+
+The donation game assumes `benefit = 3.0, cost = 1.0` — a single cooperative act costs the actor less than it benefits the recipient. This deserves scrutiny: does nature actually work this way, or is the model rigged to produce cooperation?
+
+### Why benefit > cost is not a free lunch
+
+For **pure resource transfer** (food, energy, shelter), conservation constraints apply: I cannot give you more calories than I expend carrying them to you. In those cases b ≤ c, and the model's assumption does not hold for that type of interaction.
+
+However, many real cooperative acts generate **synergies** where the benefit delivered genuinely exceeds the cost paid:
+
+| Cooperative act | Why b > c is realistic |
+|---|---|
+| Alarm call (ground squirrels) | Caller pays small predator-exposure cost; many recipients each reduce their predation risk — total group benefit >> individual cost |
+| Information sharing | Sharing knowledge costs little (you still have the knowledge); recipient may gain large survival advantage |
+| Group hunting / coordinated defence | Individual coordination cost is low; collective outcome (large prey, deterred predator) is far more valuable than any one individual could achieve alone |
+| Teaching | Teacher pays time cost; learner gains a skill usable for a lifetime |
+| Division of labour | Specialist produces more per unit effort than a generalist — both parties gain more than either contributed |
+
+In all these cases, the "extra" benefit does not appear from thin air. It comes from **information transfer, economies of scale, specialisation, or risk pooling** — mechanisms that make group output genuinely greater than the sum of individual inputs.
+
+### What the model is really capturing
+
+The donation game with b > c is best understood as modelling **synergistic cooperation** in a social species, not simple resource gifting. It is ecologically justified for:
+
+- Social primates with division of labour
+- Species with collective defence
+- Humans specifically, where language and tools create enormous synergy multipliers
+
+It is **not** a good model for:
+
+- Simple resource transfers between non-kin in solitary species
+- Situations where cooperation involves no coordination benefit
+
+### The deeper implication
+
+The fact that b > c is necessary for cooperation to be evolutionarily stable (Hamilton's rule: `b/c > 1/r` for kin selection; Axelrod's condition for reciprocity to pay) is itself an important result. It predicts that **cooperation should evolve preferentially in species with communication, coordination, and specialisation** — exactly the pattern we observe. Eusocial insects, social primates, and humans are all species where synergistic returns are large.
+
+The model is therefore not steering the outcome artificially. It is selecting a parameter regime that matches the ecological niche where reciprocal cooperation is known to evolve.
