@@ -37,6 +37,8 @@ The project contains three simulation scripts, each adding one layer of social c
 
 A fourth script, `experiment_network_diversity.py`, runs all three models across a range of network conditions to compare how each one handles more or less repeated interaction with strangers.
 
+All three models share the same ring-network topology — see [Appendix: The ring network](#appendix-the-ring-network) for a description of the spatial structure and why it was chosen over a grid or torus.
+
 ---
 
 ## Contents
