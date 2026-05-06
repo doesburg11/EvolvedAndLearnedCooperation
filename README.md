@@ -909,19 +909,21 @@ Agents condition behavior on previous interactions with the *same* partner. In t
 
 Agents interact repeatedly with local neighbors instead of random strangers. In Model 1 each agent has 8 ring neighbors; in Models 2 and 3 each agent has 2. The network diversity experiment (`experiment_network_diversity.py`) further varies how often agents encounter strangers outside their ring via `stranger_fraction`.
 
-### Mechanisms not yet included
+### Mechanisms out of scope
 
 #### Kin selection
 
-Agents do not know who their relatives are. To add this, give agents family IDs and add an extra cooperation tendency toward kin.
+Agents do not know who their relatives are. Kin selection is not implemented in any model.
 
-#### Indirect reciprocity
+#### Population-wide indirect reciprocity
 
-Agents do not observe a partner's reputation with *other* agents. Model 3 adds a limited form (reputation scores visible to immediate potential partners), but full indirect reciprocity — where reputation spreads across the whole population — is not implemented.
+**Local indirect reciprocity (Model 3 only):** Model 3 implements a limited form via reputation: agents can observe a partner's reputation score (based on local interaction history) and use it to adjust their behavior toward strangers.
+
+**Population-wide indirect reciprocity (none):** Agents do not access reputation information from across the entire population. Reputation only spreads through local observation in Model 3.
 
 #### Group selection
 
-Groups do not reproduce or die as units. To add this, divide agents into groups and allow high-performing groups to contribute more offspring to the next generation.
+Groups do not reproduce or die as units. Group selection is not implemented in any model. All selection acts on individual payoff.
 
 ---
 
