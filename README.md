@@ -61,6 +61,7 @@ All three models share the same ring-network topology — see [Appendix: The rin
 9. [Appendix: Why compare one-shot and repeated interaction?](#appendix-why-compare-one-shot-and-repeated-interaction)
 10. [Appendix: Cooperation mechanisms and model scope](#appendix-cooperation-mechanisms-and-model-scope)
 11. [Appendix: Strategic and psychological interpretation](#appendix-strategic-and-psychological-interpretation)
+12. [Appendix: Rescorla–Wagner style learning](#appendix-rescorla-wagner-style-learning)
 
 ---
 
@@ -957,3 +958,60 @@ outperforms both pure defection and unconditional cooperation.
 ```
 
 That middle ground — *trust but verify, cooperate but don't be naive* — is likely what natural selection actually built into the human social mind.
+
+---
+
+## Appendix: Rescorla–Wagner style learning
+
+Model 1 (`two_timescale_reciprocity.py`) describes its trust update as "Rescorla–Wagner style". This appendix explains what that means.
+
+### The Rescorla–Wagner model
+
+The Rescorla–Wagner model (1972) is a mathematical rule for **classical conditioning**: it describes how the strength of a learned association changes after each trial.
+
+The core update rule is:
+
+$$\Delta V = \alpha \beta (\lambda - V)$$
+
+Where:
+
+| Symbol | Meaning |
+|---|---|
+| $V$ | Current associative strength (the learned prediction) |
+| $\lambda$ | Maximum possible conditioning (the actual outcome) |
+| $(\lambda - V)$ | **Prediction error** — how surprised the learner is |
+| $\alpha$ | Salience of the conditioned stimulus (learning rate) |
+| $\beta$ | Salience of the unconditioned stimulus (learning rate) |
+
+**Key insight:** learning only occurs when the outcome is unexpected. If $V = \lambda$, the prediction error is zero and the association does not change. Surprise drives learning; confirmation does not.
+
+### How this maps onto Model 1
+
+In Model 1, the trust update is:
+
+```python
+learned_trust[i, j] += alpha_i * (target_for_i - learned_trust[i, j])
+```
+
+This is structurally identical to the Rescorla–Wagner rule:
+
+| Model 1 term | Rescorla–Wagner equivalent |
+|---|---|
+| `learned_trust[i, j]` | $V$ — current learned prediction |
+| `target_for_i` (+1 or −1) | $\lambda$ — actual observed outcome |
+| `target - learned_trust` | $(\lambda - V)$ — prediction error |
+| `alpha_i` | $\alpha\beta$ — learning rate |
+
+The agent updates its trust in partner `j` in proportion to how surprised it was by `j`'s behavior. If the agent already expected cooperation and got it, trust barely moves. If the agent was betrayed unexpectedly, trust drops sharply.
+
+### Relationship to reinforcement learning
+
+The Rescorla–Wagner rule is the conceptual ancestor of the **TD (temporal-difference) prediction error** used in modern reinforcement learning:
+
+$$Q \leftarrow Q + \alpha\,(r - Q)$$
+
+The key difference is that Rescorla–Wagner describes learning about a *stimulus* (what to expect from a partner), whereas Q-learning describes learning about *actions* (what to do). Model 1 uses the simpler, stimulus-learning form; Models 2 and 3 upgrade to full action-value learning.
+
+### Reference
+
+Rescorla, R. A., & Wagner, A. R. (1972). A theory of Pavlovian conditioning: Variations in the effectiveness of reinforcement and nonreinforcement. In A. H. Black & W. F. Prokasy (Eds.), *Classical conditioning II: Current research and theory* (pp. 64–99). Appleton-Century-Crofts.
