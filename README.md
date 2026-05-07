@@ -17,6 +17,19 @@ The simulation uses a repeated social interaction game inspired by the Prisoner'
 
 Agents can cooperate or defect. Cooperation costs the actor something but gives a larger benefit to the other agent. Over repeated interactions, agents learn which partners are trustworthy. Across generations, agents with higher total payoff reproduce more successfully.
 
+## Repository Scope
+
+`EvolvedAndLearnedCooperation` contains the canonical Python implementations for
+cooperation models that couple evolutionary dynamics with lifetime learning.
+Evolution-only models are handled in the companion repository
+`EvolvedCooperation`; learning-only models are handled in `LearnedCooperation`.
+
+The cooperation model repositories are separated by mechanism:
+
+- `EvolvedCooperation`: evolutionary dynamics only; lifetime learning is out of scope.
+- `LearnedCooperation`: lifetime learning only; evolutionary change is out of scope.
+- `EvolvedAndLearnedCooperation`: coupled evolutionary and lifetime-learning dynamics.
+
 ---
 
 ## Three models in rising complexity
